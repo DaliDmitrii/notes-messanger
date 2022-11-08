@@ -6,46 +6,31 @@
           <input
               type="text"
               placeholder="Поиск"
+              v-model="search"
           >
         </div>
       </div>
 
-      <div class="dialogs">
-        <router-link :to="`/messages/1`">
+      <div v-if="sortedDialogs && sortedDialogs.length" class="dialogs">
+        <router-link
+            v-for="dialog in sortedDialogs"
+            :to="`/messages/${dialog.id}`"
+            :key="dialog.id"
+        >
           <div class="dialog">
             <div class="title">
-              <h3>Избранное</h3>
-              <time>10:00</time>
+              <h3>{{ dialog.title }}</h3>
+              <time>{{ dialog.dateLastMessage }}</time>
             </div>
             <div class="last-message">
-              <p>Диалог с избранными сообщениями</p>
+              <p>{{ dialog.lastMessage }}</p>
             </div>
           </div>
         </router-link>
+      </div>
 
-        <router-link :to="`/messages/2`">
-          <div class="dialog">
-            <div class="title">
-              <h3>Список покупок</h3>
-              <time>10:00</time>
-            </div>
-            <div class="last-message">
-              <p>1кг яблок</p>
-            </div>
-          </div>
-        </router-link>
-
-        <router-link :to="`/messages/3`">
-          <div class="dialog">
-            <div class="title">
-              <h3>Домашние задания</h3>
-              <time>10:00</time>
-            </div>
-            <div class="last-message">
-              <p>Математика: 157, 158, 159</p>
-            </div>
-          </div>
-        </router-link>
+      <div v-else class="dialogs">
+        Нет диалогов
       </div>
 
       <div class="footer">
@@ -54,9 +39,10 @@
             <input
                 type="text"
                 placeholder="Название"
+                v-model="title"
             >
           </div>
-          <button>
+          <button @click="addDialog">
             Добавить новый дилог
           </button>
         </div>
@@ -71,20 +57,70 @@ export default {
   props: {},
 
   data() {
-    return {};
+    return {
+      dialogs: [
+        {
+          id: 1,
+          title: 'Избарнное 2',
+          lastMessage: 'Купить что-то',
+          dateLastMessage: '10:20'
+        },
+        {
+          id: 0,
+          title: 'Избарнное',
+          lastMessage: 'Купить что-то',
+          dateLastMessage: '10:20'
+        },
+        {
+          id: 2,
+          title: 'Избарнное 3',
+          lastMessage: 'Купить что-то',
+          dateLastMessage: '10:20'
+        },
+      ],
+      title: '',
+      search: ''
+    };
   },
 
-  computed: {},
+  computed: {
+    sortedDialogs() {
+      return this.dialogs.filter(dialog => {
+        return dialog.title.toLowerCase().includes(this.search.toLowerCase())
+      })
+    },
+  },
 
-  watch: {},
+  watch: {
+  },
 
   created() {
+    this.getDialogs()
   },
 
   mounted() {
   },
 
-  methods: {},
+  methods: {
+    addDialog() {
+      this.dialogs.push({
+        id: Date.now(),
+        title: this.title,
+        lastMessage: 'Нет сообщений',
+        dateLastMessage: new Date().toLocaleString()
+      })
+      this.title = ''
+      this.saveDialogs();
+    },
+
+    saveDialogs() {
+      localStorage.setItem('dialogs', JSON.stringify(this.dialogs));
+    },
+
+    getDialogs() {
+      this.dialogs = JSON.parse(localStorage.getItem('dialogs') || '[]');
+    }
+  },
 }
 </script>
 
